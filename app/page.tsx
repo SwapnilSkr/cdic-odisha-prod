@@ -20,7 +20,7 @@ export default function Home() {
           className={`${currentTheme.primary} p-6 shadow-lg transition-colors duration-300`}
         >
           <div className="space-y-2">
-            <p className={`text-sm font-medium ${currentTheme.cardText}`}>
+            <p className={`text-sm font-medium ${currentTheme.primaryText}`}>
               Total Posts:
             </p>
             <p className={`text-4xl font-bold ${currentTheme.primaryText}`}>
@@ -32,7 +32,7 @@ export default function Home() {
           className={`${currentTheme.primary} p-6 shadow-lg transition-colors duration-300`}
         >
           <div className="space-y-2">
-            <p className={`text-sm font-medium ${currentTheme.cardText}`}>
+            <p className={`text-sm font-medium ${currentTheme.primaryText}`}>
               Fact Checks:
             </p>
             <p className={`text-4xl font-bold ${currentTheme.primaryText}`}>
