@@ -1,36 +1,94 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { themes } from "@/lib/themes";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
-const trendItems = [
-  {
-    image: "/placeholder.svg?height=60&width=60",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna",
-    icon: Facebook,
-  },
-  {
-    image: "/placeholder.svg?height=60&width=60",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, incididunt ut labore et dolore magna",
-    icon: Instagram,
-  },
-  {
-    image: "/placeholder.svg?height=60&width=60",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna",
-    icon: Twitter,
-  },
-  {
-    image: "/placeholder.svg?height=60&width=60",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, tempor incididunt ut labore et dolore magna",
-    icon: Twitter,
-  },
-];
+interface TrendItem {
+  image: string;
+  text: string;
+  location: string;
+  icon: React.ComponentType;
+}
+
+interface ApiResponseItem {
+  user: {
+    profile_pic_url: string;
+  };
+  caption_text: string;
+  location?: {
+    name: string;
+  };
+}
+
+// Utility function to truncate captions to 10 words
+const truncateCaption = (caption: string, wordLimit: number = 10): string => {
+  const words = caption.split(" ");
+  return words.length > wordLimit
+    ? `${words.slice(0, wordLimit).join(" ")}...`
+    : caption;
+};
 
 export function Trends() {
   const { theme } = useTheme();
   const currentTheme = themes[theme];
+
+  const [trendItems, setTrendItems] = useState<TrendItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://api.hikerapi.com/v1/hashtag/medias/top?name=odisha&amount=50",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-key": process.env.NEXT_PUBLIC_HIKER_API_KEY || "",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        const transformedData: TrendItem[] = result.map(
+          (item: ApiResponseItem) => ({
+            image: item.user.profile_pic_url,
+            text: truncateCaption(item.caption_text),
+            location: item.location?.name || "Unknown Location",
+            icon: Instagram,
+          })
+        );
+
+        setTrendItems(transformedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Set loading to false after API call completes
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
+          <p className="text-gray-600 mt-4">Loading trends...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className={`shadow-lg ${currentTheme.shadow}`}>
@@ -52,13 +110,25 @@ export function Trends() {
         <div className="space-y-4 p-6 pt-2">
           {trendItems.map((item, index) => (
             <div key={index} className="flex items-start gap-4 relative pr-4">
+              {/* Image Container */}
               <div
                 className={`w-[60px] h-[60px] shrink-0 rounded-lg ${currentTheme.accent} overflow-hidden`}
               >
-                <div className="w-full h-full object-cover" />
+                <Image
+                  width={60}
+                  height={60}
+                  src={item.image || "/placeholder.svg"}
+                  alt={`Profile of ${item.location}`}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <p className="text-sm text-gray-600 flex-1">{item.text}</p>
-              <item.icon
+              {/* Caption and Location */}
+              <div className="flex-1">
+                <p className="text-sm text-gray-600">{item.text}</p>
+                <p className="text-xs text-gray-500 mt-1">📍 {item.location}</p>
+              </div>
+              {/* Icon */}
+              <div
                 className={`w-5 h-5 shrink-0 mt-1 ${
                   theme === "blue"
                     ? "text-blue-500"
@@ -66,7 +136,9 @@ export function Trends() {
                       ? "text-yellow-400"
                       : "text-orange-500"
                 }`}
-              />
+              >
+                <item.icon />
+              </div>
             </div>
           ))}
         </div>
