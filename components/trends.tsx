@@ -15,13 +15,9 @@ interface TrendItem {
 }
 
 interface ApiResponseItem {
-  user: {
-    profile_pic_url: string;
-  };
-  caption_text: string;
-  location?: {
-    name: string;
-  };
+  image: string;
+  text: string;
+  location: string;
 }
 
 // Utility function to truncate captions to 10 words
@@ -42,37 +38,30 @@ export function Trends() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "https://api.hikerapi.com/v1/hashtag/medias/top?name=odisha&amount=50",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "x-access-key": process.env.NEXT_PUBLIC_HIKER_API_KEY || "",
-            },
-          }
-        );
+        const response = await fetch("/api/trends"); // Fetch from your local API endpoint
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
+        const data = await response.json();
 
-        const transformedData: TrendItem[] = result.map(
+        // Transform the data to apply truncation and add the icon
+        const transformedData: TrendItem[] = data.map(
           (item: ApiResponseItem) => ({
-            image: item.user.profile_pic_url,
-            text: truncateCaption(item.caption_text),
-            location: item.location?.name || "Unknown Location",
-            icon: Instagram,
+            image: item && item.image ? item.image : "/placeholder.svg",
+            text: item && item.text ? truncateCaption(item.text) : "", // Apply truncation here
+            location:
+              item && item.location ? item.location : "Unknown Location",
+            icon: Instagram, // Add the icon
           })
         );
 
         setTrendItems(transformedData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data from the API:", error);
       } finally {
-        setLoading(false); // Set loading to false after API call completes
+        setLoading(false); // Set loading to false after the API call completes
       }
     };
 
@@ -124,7 +113,7 @@ export function Trends() {
               </div>
               {/* Caption and Location */}
               <div className="flex-1">
-                <p className="text-sm text-gray-600">{item.text}</p>
+                <p className="text-sm text-gray-600 break-all">{item.text}</p>
                 <p className="text-xs text-gray-500 mt-1">📍 {item.location}</p>
               </div>
               {/* Icon */}

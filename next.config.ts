@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "instagram.frix7-1.fna.fbcdn.net",
+        hostname: "**.fna.fbcdn.net",
         pathname: "/**",
       },
     ],
