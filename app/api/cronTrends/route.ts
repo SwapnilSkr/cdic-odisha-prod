@@ -6,7 +6,7 @@ export async function GET() {
     await fetchAndStoreTrends();
 
     return NextResponse.json({
-      message: "Trends fetched and stored successfully",
+      message: "Trends fetched and stored very successfully",
     });
   } catch (error) {
     console.error("Error fetching trends:", error);
