@@ -52,6 +52,8 @@ export function Timeline() {
     fetchTimeline();
   }, []);
 
+  console.log("timelineItems", timelineItems);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
